@@ -1,12 +1,16 @@
 from timeit import default_timer as timer
 from tqdm import tqdm 
+import numba as nb
+import py_compile
+
+py_compile.compile('/Users/shuramakarenko/LocalDocs/Studying/Cpp-and-UNIX/lab_02/cmake/main.py', cfile='../build/main.pyc')
 
 '''
 Если внимательно посмотреть на функцию, то на самом
 деле все слагаемые сокращаются. Поэтому функция названа Taras - 
 я тебя породил, я тебя и убью.
 '''
-
+@nb.jit(nb.float64(nb.float64), nopython=True, fastmath=True)
 def Taras(x):
     return x **2 - x ** 2 + x * 4 - x * 5 + x + x
 
@@ -22,7 +26,7 @@ def main(n):
     
     # Повторяем цикл нужное количество раз, фиксируя время
     start = timer()
-    for i in tqdm(range(n)):
+    for i in range(n):
         Taras(x)
     end = timer()
     print(f'Время: {end - start} s')
