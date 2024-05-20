@@ -27,7 +27,7 @@ void hanoi(int n, int from, int to, int help, std::list<Move>& moves) {
 int main(int argc, char *argv[]) {
     // Проверка количества аргументов
     if(argc != 2) {
-        cout << "Какоеå то странное количество колец" << endl;
+        cout << "Какое то странное количество колец" << endl;
         return 1;
     }
 

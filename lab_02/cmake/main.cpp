@@ -1,5 +1,4 @@
 #include <iostream>
-#include <cmath>        // Для возведения в степень
 #include <chrono>       // Для измерения времени
 #include <sstream>       // Для проверки ввода
 using namespace std;
@@ -10,7 +9,7 @@ using namespace std;
 я тебя породил, я тебя и убью.
 */
 float Taras(float x){
-    return pow(x, 2) - pow(x, 2) + x * 4 - x * 5 + x + x;
+    return x * x - x * x + x * 4 - x * 5 + x + x;
 }
  int main(int argc, char* argv[]){   
     // Объявим переменную х и проверим, что данные корректные
