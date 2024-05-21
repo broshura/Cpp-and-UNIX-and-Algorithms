@@ -6,8 +6,13 @@
 
 using namespace std;
 
+/* 
+Если внимательно посмотреть на функцию, то на самом
+деле все слагаемые сокращаются. Поэтому функция названа Taras - 
+я тебя породил, я тебя и убью.
+*/
 float Taras(float x){
-    return x * x;
+    return x * x - x * x + x * 4 - x * 5 + x + x;
 }
 
 float Twice(float x){
@@ -34,8 +39,65 @@ float Tarased_twice(float taras, float twice){
     pid_t pid;
     cout << "Параллельные вычисления Taras, twice, затем Tarased_twice:\n";
     for(int repeat : n){
-        // Измеряем время выполнения функции
+        // Измеряем время выполнения пустого цикла
         auto start = chrono::high_resolution_clock::now();
+        for (int i = 0; i < repeat; i++){}
+        auto end = chrono::high_resolution_clock::now();
+        auto zero = end - start;
+        // Измеряем время выполнения функции
+
+        start = chrono::high_resolution_clock::now();
+        for (int i = 0; i < repeat; i++){
+            // Создаем процессы
+            pid = fork();
+            if (pid == 0) {
+                // Первый процесс
+                taras = Taras(x);
+                write(Taras_pipe[1], &taras, sizeof(taras));
+                close(Taras_pipe[1]);
+                exit(0);
+            } 
+            // Ждем завершения процессов
+            wait(NULL);
+            // Читаем результаты
+            read(Taras_pipe[0], &taras, sizeof(taras));
+            // Закрываем каналы
+            close(Taras_pipe[0]);
+            close(Taras_pipe[1]);
+        }
+        end = chrono::high_resolution_clock::now();
+        auto diff_taras = end - start - zero;
+
+        start = chrono::high_resolution_clock::now();
+        for (int i = 0; i < repeat; i++){
+            // Создаем процессы
+            pid = fork();
+            if (pid == 0) {
+                // Второй процесс
+                twice = Twice(x);
+                write(Twice_pipe[1], &twice, sizeof(twice));
+                close(Twice_pipe[1]);
+                exit(0);
+            }
+            // Ждем завершения процессов
+            wait(NULL);
+            // Читаем результаты
+            read(Twice_pipe[0], &twice, sizeof(twice));
+            // Закрываем каналы
+            close(Twice_pipe[0]);
+            close(Twice_pipe[1]);
+        }
+        end = chrono::high_resolution_clock::now();
+        auto diff_twice = end - start - zero;
+
+        start = chrono::high_resolution_clock::now();
+        for (int i = 0; i < repeat; i++){
+            tarased_twice = Tarased_twice(taras, twice);
+        }
+        end = chrono::high_resolution_clock::now();
+        auto diff_tarased_twice = end - start - zero;
+
+        start = chrono::high_resolution_clock::now();
         for (int i = 0; i < repeat; i++){
             // Создаем процессы
             pid = fork();
@@ -68,11 +130,20 @@ float Tarased_twice(float taras, float twice){
             close(Taras_pipe[1]);
             close(Twice_pipe[1]);
         }
-        auto end = chrono::high_resolution_clock::now();
-        auto diff = end - start;
+        end = chrono::high_resolution_clock::now();
+        auto diff_full = end - start - zero;
         // Выводим время выполнения и количество итераций
-        cout << "Время для " << repeat << " итераций: ";
-        cout << std::chrono::duration<double>(diff).count() << " s\n";
+        cout << "Время для " << repeat << " итераций для Taras: ";
+        cout << std::chrono::duration<double>(diff_taras).count() << " s\n";
+    
+        cout << "Время для " << repeat << " итераций для twice: ";
+        cout << std::chrono::duration<double>(diff_twice).count() << " s\n";
+
+        cout << "Время для " << repeat << " итераций для Tarased_twice: ";
+        cout << std::chrono::duration<double>(diff_tarased_twice).count() << " s\n";
+
+        cout << "Время для " << repeat << " итераций для полного алгоритма: ";
+        cout << std::chrono::duration<double>(diff_full).count() << " s\n";
     }
 
     return 0;
