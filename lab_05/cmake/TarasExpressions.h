@@ -68,22 +68,73 @@ public:
             addVariable(var);
         }
     }
+    list<float_variable> getVariables() const { return variables; }
+    bool isVariableExists(const string& name) const {
+        auto it = std::find_if(variables.begin(), variables.end(), 
+            [&name](const float_variable& var) { return var.getName() == name; });
+        return it != variables.end();
+    }
 };
+
+// Перевод строки, которая может быть переменной, в число
+float toFloat(const string& str, floats& floats_variables) {
+    // Выводим все переменные из списка переменных
+    //cout << "Переменные: ";
+    //for (const float_variable& var : floats_variables.getVariables()) {
+    //    cout << var.getName() << " = " << var.getValue() << " ";
+    //}
+    //cout << endl;
+    if (floats_variables.isVariableExists(str)) {
+        return floats_variables.getVariableValue(str);
+    }
+    try {
+        return stof(str);
+    } catch (const invalid_argument& e) {
+        throw runtime_error("Невірний формат числа, добрий казак");
+        return 0;
+    }
+}
 
 
 // Базовый класс для выражений
 class Expression{
 public:
-    virtual float express() = 0;
+    virtual float express(floats floats_variables) = 0;
+    virtual ~Expression() {}
+    virtual string getStrExpression() = 0;
 };
 
 
 class float_expression: public Expression {
-    std::list<float> numbers;
-    std::list<char> operators;
-
+    list<string> strNumbers;
+    list<float> numbers;
+    list<char> operators;
 public:
-    float_expression(const std::list<float>& numbers, const std::list<char>& operators) {}
+    float_expression(string& strExp) {
+        size_t pos = strExp.find_first_of("+-*/");
+
+        string strNumber;
+        char op;
+        if (pos == string::npos) {
+            strNumbers.push_back(strExp);
+        } else {
+        while (pos != string::npos) {
+            // Получаем оператор
+            op = strExp[pos];
+            operators.push_back(op);
+            // Получаем число
+            strNumber = strExp.substr(0, pos);
+            strNumbers.push_back(strNumber);
+            // Удаляем число и оператор из строки
+            strExp = strExp.substr(pos + 1);
+            pos = strExp.find_first_of("+-*/");
+
+        strNumbers.push_back(strExp);
+        }
+        }
+    }
+    float_expression(const list<float>& numbers, const list<char>& operators): numbers(numbers), operators(operators) {}
+    float_expression() {}
     void addNumber(float number) {
         numbers.push_back(number);
     }
@@ -95,14 +146,30 @@ public:
         operators.push_back(op);
     }
 
-    virtual float express() override {
+    virtual float express(floats floats_variables) override {
+        // Выводим все числа и операторы
+        cout << "Числа: ";
+        for (const float& num : numbers) {
+            cout << num << " ";
+        }
+        cout << endl;
+        cout << "Оператори: ";
+        for (const char& op : operators) {
+            cout << op << " ";
+        }
+        cout << endl;
+
+        if (strNumbers.size() != 0) {
+            for (const string& strNum : strNumbers) {
+                numbers.push_back(toFloat(strNum, floats_variables));
+            }
+        }
         if (operators.size() != numbers.size() - 1) {
             throw std::runtime_error("Невірна кількість чисел та операцій, добрий казак");
         }
-
         // Создаем копии списков чисел и операторов
-        std::list<float> tempNumbers = numbers;
-        std::list<char> tempOperators = operators;
+        list<float> tempNumbers = numbers;
+        list<char> tempOperators = operators;
 
         auto numIt = tempNumbers.begin();
         auto opIt = tempOperators.begin();
@@ -146,6 +213,31 @@ public:
         }
         return result;
     }
+    virtual string getStrExpression() override {
+        std::stringstream ss;
+        auto numIt = numbers.begin();
+        auto opIt = operators.begin();
+        ss << *numIt;
+        ++numIt;
+        while (numIt != numbers.end()) {
+            ss << *opIt << *numIt;
+            ++numIt;
+            ++opIt;
+        }
+        return ss.str();
+    }
+    list<string> getStrNumbers() { 
+        if (strNumbers.size() == 0) {
+            for (const float& num : numbers) {
+                strNumbers.push_back(to_string(num));
+            }
+        }
+        return strNumbers; 
+        }
+    list<float> getNumbers() { return numbers; }
+    list<char> getOperators() { return operators; }
 };
+
+
 
 #endif
