@@ -79,11 +79,11 @@ public:
 // Перевод строки, которая может быть переменной, в число
 float toFloat(const string& str, floats& floats_variables) {
     // Выводим все переменные из списка переменных
-    //cout << "Переменные: ";
-    //for (const float_variable& var : floats_variables.getVariables()) {
+    // cout << "Переменные: ";
+    // for (const float_variable& var : floats_variables.getVariables()) {
     //    cout << var.getName() << " = " << var.getValue() << " ";
-    //}
-    //cout << endl;
+    // }
+    // cout << endl;
     if (floats_variables.isVariableExists(str)) {
         return floats_variables.getVariableValue(str);
     }
@@ -99,7 +99,7 @@ float toFloat(const string& str, floats& floats_variables) {
 // Базовый класс для выражений
 class Expression{
 public:
-    virtual float express(floats floats_variables) = 0;
+    virtual float express(floats& floats_variables) = 0;
     virtual ~Expression() {}
     virtual string getStrExpression() = 0;
 };
@@ -112,7 +112,6 @@ class float_expression: public Expression {
 public:
     float_expression(string& strExp) {
         size_t pos = strExp.find_first_of("+-*/");
-
         string strNumber;
         char op;
         if (pos == string::npos) {
@@ -128,9 +127,8 @@ public:
             // Удаляем число и оператор из строки
             strExp = strExp.substr(pos + 1);
             pos = strExp.find_first_of("+-*/");
-
-        strNumbers.push_back(strExp);
         }
+        strNumbers.push_back(strExp);
         }
     }
     float_expression(const list<float>& numbers, const list<char>& operators): numbers(numbers), operators(operators) {}
@@ -146,20 +144,21 @@ public:
         operators.push_back(op);
     }
 
-    virtual float express(floats floats_variables) override {
-        // Выводим все числа и операторы
-        cout << "Числа: ";
-        for (const float& num : numbers) {
-            cout << num << " ";
-        }
-        cout << endl;
-        cout << "Оператори: ";
-        for (const char& op : operators) {
-            cout << op << " ";
-        }
-        cout << endl;
+    virtual float express(floats& floats_variables) override {
+        //Выводим все числа и операторы
+        // cout << endl;
+        // cout << "Числа: ";
+        // for (const float& num : numbers) {
+        //     cout << num << " ";
+        // }
+        // cout << endl;
+        // cout << "Оператори: ";
+        // for (const char& op : operators) {
+        //     cout << op << " ";
+        // }
+        // cout << endl;
 
-        if (strNumbers.size() != 0) {
+        if (strNumbers.size() != 0 && numbers.size() == 0){
             for (const string& strNum : strNumbers) {
                 numbers.push_back(toFloat(strNum, floats_variables));
             }

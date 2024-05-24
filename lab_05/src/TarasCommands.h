@@ -14,7 +14,7 @@ using namespace std;
 // базовая команда вызываемая при выполнении - execute
 class Command {
 public:
-    virtual void execute(floats floats_variables) = 0;
+    virtual void execute(floats& floats_variables) = 0;
     virtual string name() { return "@Command";}
     virtual ~Command() {}
 };
@@ -39,7 +39,7 @@ public:
     // Конструктор класса с использованием выражения
     console_out(Expression* expr) : expMessage(expr) {}
     // Переопределяем метод execute
-    void execute(floats floats_variables) override {
+    void execute(floats& floats_variables) override {
         // Если expMessage не равно nullptr
         if (expMessage != nullptr) {
             // Выводим результат выражения
@@ -101,7 +101,7 @@ public:
     file_out(Expression* expr, const string& fname) : expMessage(expr), filename(fname), expFilename(nullptr) {}
     file_out(Expression* expr1, Expression* expr2) : expMessage(expr1), expFilename(expr2) {}
 
-    void execute(floats floats_variables) override {
+    void execute(floats& floats_variables) override {
         if (expMessage != nullptr) {
             message = to_string(expMessage->express(floats_variables));
         }
@@ -137,8 +137,8 @@ public:
     void addCommand(unique_ptr<Command> cmd) {
         commands.push_back(std::move(cmd));
     }
-    void execute(floats floats_variables) override {
-        if (expCount.getNumbers().size() > 0) {
+    void execute(floats& floats_variables) override {
+        if (expCount.getStrNumbers().size() > 0) {
             count = expCount.express(floats_variables);
         }
         for (int i = 0; i < count; ++i) {

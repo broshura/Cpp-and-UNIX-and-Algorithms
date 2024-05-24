@@ -62,9 +62,7 @@ class assign_float : public Command {
 public:
     assign_float(const string& var, float_expression& exp) : Name(var), expression(exp) {}
     assign_float(const string& var, string strExp) : Name(var), expression(strExp) {}
-    void execute(floats floats_variables) override {
-        cout << "Присвоєння значення змінній " << Name << " = " << expression.express(floats_variables) << endl;
-        cout << "Вираз: " << expression.getStrExpression() << endl;
+    void execute(floats& floats_variables) override {
         floats_variables.addVariable(float_variable(Name, expression.express(floats_variables)));
     }
     string name() override { return "#assign_float"; }
@@ -170,7 +168,7 @@ void lineToCommands(stringstream& ss, string item, int& num_of_threads) {
             string commandArg = commandArgs.substr(1, commandArgs.size() - 2);
 
             string strExpression = removeSpaces(commandArg);
-            float_expression count = float_expression(strExpression);;
+            float_expression count = float_expression(strExpression);
             loop loopCommand(count);
             getline(ss, item, '\n');
             if (item.size() < 4) {
@@ -188,7 +186,6 @@ void lineToCommands(stringstream& ss, string item, int& num_of_threads) {
             }
             while (getline(ss, item, '\n')) {
                 if (item.substr(0, 4) != "    ") {
-                    //cout << "Строка: " << item << endl;
                     if (item.empty()) {
                         continue;
                     }
@@ -196,7 +193,6 @@ void lineToCommands(stringstream& ss, string item, int& num_of_threads) {
                     lineToCommands(ss, item, num_of_threads);
                     break;
                 }
-                //cout << "Строка цикла: " << item << endl;
                 item = trim(item);
                 lineToCommands(ss, item, num_of_threads);
                 auto it = commands.end();
@@ -256,18 +252,15 @@ int main(int argc, char* argv[]){
         number_of_threads.push_back(num_of_threads);
         number_of_strings++ ;
     }
-    cout << endl;
     // Закрываем файл
     file.close();
     // Запускаем потоки
-    cout << "Виконання потокiв: " << endl;
     for (int i = 0; i < number_of_strings; i++) {
         // Запускаем каждую отделенную \n строку в отдельном потоке
         for (int j = 0; j < number_of_threads[i]; j++) {
             auto it = commands.begin();
             advance(it, j);
             threads.push_back(thread([it]() { 
-                cout << (*it)->name() << endl;
                 (*it)->execute(floats_variables);
             }));
         }
@@ -282,5 +275,6 @@ int main(int argc, char* argv[]){
             commands.pop_front();
         }
     }
+    cout << "Компiляцiя завершена, добрий казак \n";
     return 0;
 }
